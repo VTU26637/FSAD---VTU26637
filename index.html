@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TechSpark – Ticket Booking</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #162975;
+    --surface: #13141a;
+    --card: #1b1d27;
+    --border: #2a2d3a;
+    --accent: #c81136;
+    --accent2: #e05b3a;
+    --text: #bee417;
+    --muted: #7a7e99;
+    --success: #2ecc8a;
+    --error: #ff5e6c;
+    --radius: 16px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: -0.5px; color: var(--text); }
+  .logo span { color: var(--accent); }
+  .badge { background: var(--accent); color: #0b0c10; font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .hero { position: relative; padding: 60px 40px 40px; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -80px; right: -80px; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(244,196,48,0.12) 0%, transparent 70%); pointer-events: none; }
+  .hero-tag { display: inline-block; border: 1px solid var(--accent); color: var(--accent); font-size: 0.72rem; font-weight: 600; padding: 5px 14px; border-radius: 100px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 16px; }
+  .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; line-height: 1.1; max-width: 700px; margin-bottom: 10px; }
+  .hero h1 .highlight { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 1rem; max-width: 500px; }
+
+  .layout { display: grid; grid-template-columns: 1fr 420px; gap: 24px; padding: 0 40px 60px; max-width: 1200px; margin: 0 auto; }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; padding: 0 20px 60px; }
+    header { padding: 16px 20px; }
+    .hero { padding: 40px 20px 30px; }
+  }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 22px; display: flex; align-items: center; gap: 10px; }
+  .card-title .icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(244,196,48,0.12); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+
+  .detail-grid { display: flex; flex-direction: column; gap: 14px; }
+  .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .detail-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; min-width: 110px; }
+  .detail-value { font-size: 0.92rem; font-weight: 500; text-align: right; color: var(--text); max-width: 280px; }
+  .price-badge { background: rgba(244,196,48,0.15); color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; padding: 4px 14px; border-radius: 8px; }
+  .tickets-badge { background: rgba(46,204,138,0.12); color: var(--success); font-weight: 600; font-size: 0.9rem; padding: 4px 14px; border-radius: 8px; }
+  .tickets-badge.low { background: rgba(255,94,108,0.12); color: var(--error); }
+
+  .progress-wrap { margin-top: 8px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+  .progress-track { height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: width 0.6s ease; }
+
+  .form-group { margin-bottom: 18px; }
+  label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 7px; }
+  input, select { width: 100%; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; padding: 12px 14px; outline: none; transition: border-color 0.2s; appearance: none; -webkit-appearance: none; }
+  input:focus, select:focus { border-color: var(--accent); }
+  input.error, select.error { border-color: var(--error); }
+  .error-msg { color: var(--error); font-size: 0.78rem; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+  option { background: var(--surface); }
+
+  .amount-preview { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .amount-preview span { font-size: 0.82rem; color: var(--muted); }
+  .amount-preview strong { font-family: 'Syne', sans-serif; font-size: 1.2rem; color: var(--accent); }
+
+  .btn-primary { width: 100%; padding: 14px; background: var(--accent); color: #0b0c10; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: opacity 0.2s, transform 0.1s; letter-spacing: 0.5px; }
+  .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+  .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(16, 43, 152, 0.85); display: flex; align-items: center; justify-content: center; z-index: 999; padding: 20px; backdrop-filter: blur(6px); animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 36px; max-width: 460px; width: 100%; text-align: center; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .success-icon { width: 72px; height: 72px; border-radius: 50%; background: rgba(46,204,138,0.12); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 20px; border: 2px solid var(--success); }
+  .modal h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+  .modal p { color: var(--muted); font-size: 0.9rem; margin-bottom: 24px; }
+  .summary-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; text-align: left; margin-bottom: 24px; }
+  .summary-row { display: flex; justify-content: space-between; font-size: 0.88rem; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row span:first-child { color: var(--muted); }
+  .summary-row span:last-child { font-weight: 500; }
+  .total-row span:last-child { color: var(--accent); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+  .btn-close { width: 100%; padding: 13px; background: var(--border); color: var(--text); border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+  .btn-close:hover { background: #353847; }
+
+  .state-center { text-align: center; padding: 80px 20px; color: var(--muted); }
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .api-note { background: rgba(244,196,48,0.06); border: 1px dashed var(--accent); border-radius: 10px; padding: 12px 16px; font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+  .api-note strong { color: var(--accent); }
+  .api-note.err { background: rgba(255,94,108,0.06); border-color: var(--error); color: var(--error); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">BrightSpark<span></span> '26</div>
+  <div class="badge">Live Booking</div>
+</header>
+
+<div class="hero">
+  <div class="hero-tag">📅 April 25, 2025</div>
+  <h1>National <span class="highlight">Technical</span><br/>Festival 2025</h1>
+  <p>Book your seats for the biggest inter-department tech event of the year.</p>
+</div>
+
+<div class="layout">
+
+  <!-- LEFT COLUMN -->
+  <div>
+    <!-- Event Card -->
+    <div class="card" style="margin-bottom:20px" id="eventCard">
+      <div class="state-center"><div class="spinner"></div><p>Loading event…</p></div>
+    </div>
+
+    <!-- Booking Form -->
+    <div class="card">
+      <div class="card-title"><div class="icon">🎟️</div> Book Tickets</div>
+      <div id="serverError"></div>
+
+      <div class="form-group">
+        <label for="inp-name">Full Name</label>
+        <input type="text" id="inp-name" placeholder="e.g. Ravi Kumar" oninput="handleInput('name', this.value)" />
+        <div class="error-msg" id="err-name" style="display:none"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="inp-email">Email Address</label>
+        <input type="email" id="inp-email" placeholder="e.g. ravi@college.edu" oninput="handleInput('email', this.value)" />
+        <div class="error-msg" id="err-email" style="display:none"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="inp-department">Department</label>
+        <select id="inp-department" onchange="handleInput('department', this.value)">
+          <option value="">Select your department</option>
+          <option value="CSE">CSE</option>
+          <option value="ECE">ECE</option>
+          <option value="EEE">EEE</option>
+          <option value="Mechanical">Mechanical</option>
+          <option value="Civil">Civil</option>
+          <option value="IT">IT</option>
+          <option value="MCA">MCA</option>
+          <option value="MBA">MBA</option>
+        </select>
+        <div class="error-msg" id="err-department" style="display:none"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="inp-tickets">Number of Tickets</label>
+        <input type="number" id="inp-tickets" placeholder="e.g. 2" min="1" max="10" oninput="handleInput('tickets', this.value)" />
+        <div class="error-msg" id="err-tickets" style="display:none"></div>
+      </div>
+
+      <div class="amount-preview">
+        <span>Total Amount</span>
+        <strong id="totalAmount">₹—</strong>
+      </div>
+
+      <button class="btn-primary" id="submitBtn" onclick="handleSubmit()">
+        🎟️ Confirm Booking
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title"><div class="icon">ℹ️</div> Important Info</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;font-size:0.88rem;color:var(--muted);line-height:1.5">
+        <li>🔒 Your booking is secured upon confirmation.</li>
+        <li>📧 A confirmation will be sent to your email.</li>
+        <li>🪑 Seats are allocated on a first-come basis.</li>
+        <li>🚫 No refunds after booking is confirmed.</li>
+        <li>🆔 Carry your college ID card on event day.</li>
+        <li>📱 Show your booking summary at the entry gate.</li>
+      </ul>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,rgba(244,196,48,0.08),rgba(224,91,58,0.08));border-color:rgba(244,196,48,0.25)">
+      <div class="card-title"><div class="icon">📞</div> Contact & Support</div>
+      <div style="font-size:0.88rem;color:var(--muted);line-height:1.7">
+        <p>🧑‍💻 <strong style="color:var(--text)">Student Coordinator</strong><br/>Arjun Sharma – <span style="color:var(--accent)">+91 98765 43210</span></p>
+        <p style="margin-top:12px">📧 <strong style="color:var(--text)">Email</strong><br/><span style="color:var(--accent)">techspark@cse.edu.in</span></p>
+        <p style="margin-top:12px">🏢 <strong style="color:var(--text)">Organiser</strong><br/>CSE Student Council, Block A</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="success-icon">✅</div>
+    <h2>Booking Confirmed!</h2>
+    <p>Your ticket has been booked successfully. See you at the event!</p>
+    <div class="summary-box" id="modalSummary"></div>
+    <button class="btn-close" onclick="closeModal()">Close & Book More</button>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:5000/api';
+
+  // ── State ──
+  let eventData = null;
+  let usingMock = false;
+  let form = { name: '', email: '', department: '', tickets: '' };
+
+  const MOCK_EVENT = {
+    name: "TechSpark 2025 – National Technical Festival",
+    department: "Department of Computer Science & Engineering",
+    date: "2025-04-25",
+    time: "09:00 AM – 06:00 PM",
+    venue: "Main Auditorium, Block A, Ground Floor",
+    price: 199,
+    total_tickets: 200,
+    available_tickets: 200
+  };
+
+  // ── Load event ──
+  async function loadEvent() {
+    try {
+      const r = await fetch(`${API}/event`);
+      if (!r.ok) throw new Error('Bad response');
+      eventData = await r.json();
+      usingMock = false;
+    } catch {
+      eventData = { ...MOCK_EVENT };
+      usingMock = true;
+    }
+    renderEventCard();
+  }
+
+  function formatDate(d) {
+    const dateObj = new Date(d + 'T00:00:00'); // Fix timezone shift bug
+    return dateObj.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function renderEventCard() {
+    const e = eventData;
+    const sold = e.total_tickets - e.available_tickets;
+    const pct = Math.round((sold / e.total_tickets) * 100);
+    const isLow = e.available_tickets > 0 && e.available_tickets <= 20;
+
+    document.getElementById('eventCard').innerHTML = `
+      <div class="card-title"><div class="icon">🎉</div> Event Details</div>
+      ${usingMock ? `<div class="api-note">⚡ <strong>Demo mode:</strong> Backend not detected. Run <code>node server.js</code> to connect MySQL. Changes won't persist.</div>` : ''}
+      <div class="detail-grid">
+        <div class="detail-row"><span class="detail-label">Event</span><span class="detail-value" style="font-family:'Syne',sans-serif;font-weight:700">${e.name}</span></div>
+        <div class="detail-row"><span class="detail-label">Department</span><span class="detail-value">${e.department}</span></div>
+        <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${formatDate(e.date)}</span></div>
+        <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">⏰ ${e.time}</span></div>
+        <div class="detail-row"><span class="detail-label">Venue</span><span class="detail-value">📍 ${e.venue}</span></div>
+        <div class="detail-row"><span class="detail-label">Ticket Price</span><span class="detail-value"><span class="price-badge">₹${e.price}</span></span></div>
+        <div class="detail-row"><span class="detail-label">Availability</span><span class="detail-value"><span class="tickets-badge ${isLow ? 'low' : ''}">${e.available_tickets} / ${e.total_tickets} seats left</span></span></div>
+      </div>
+      <div class="progress-wrap" style="margin-top:18px">
+        <div class="progress-label"><span>Seats filled</span><span>${pct}%</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+    `;
+
+    const btn = document.getElementById('submitBtn');
+    if (e.available_tickets === 0) {
+      btn.disabled = true;
+      btn.textContent = '🚫 Sold Out';
+    } else {
+      btn.disabled = false;
+      btn.textContent = '🎟️ Confirm Booking';
+    }
+  }
+
+  // ── Input handler ──
+  function handleInput(field, value) {
+    form[field] = value;
+    clearError(field);
+
+    if (field === 'tickets' && eventData) {
+      const t = parseInt(value);
+      document.getElementById('totalAmount').textContent =
+        (!isNaN(t) && t > 0) ? `₹${(t * eventData.price).toLocaleString('en-IN')}` : '₹—';
+    }
+  }
+
+  // ── Errors ──
+  function showError(field, msg) {
+    const el = document.getElementById(`err-${field}`);
+    const inp = document.getElementById(`inp-${field}`);
+    if (el) { el.textContent = '⚠ ' + msg; el.style.display = 'flex'; }
+    if (inp) inp.classList.add('error');
+  }
+  function clearError(field) {
+    const el = document.getElementById(`err-${field}`);
+    const inp = document.getElementById(`inp-${field}`);
+    if (el) { el.textContent = ''; el.style.display = 'none'; }
+    if (inp) inp.classList.remove('error');
+  }
+  function clearAllErrors() {
+    ['name', 'email', 'department', 'tickets'].forEach(clearError);
+    document.getElementById('serverError').innerHTML = '';
+  }
+
+  // ── Validate ──
+  function validate() {
+    clearAllErrors();
+    let valid = true;
+    const ticketCount = parseInt(form.tickets);
+
+    if (!form.name.trim()) { showError('name', 'Full name is required.'); valid = false; }
+    if (!form.email.trim()) { showError('email', 'Email is required.'); valid = false; }
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) { showError('email', 'Enter a valid email address.'); valid = false; }
+    if (!form.department) { showError('department', 'Department is required.'); valid = false; }
+    if (!form.tickets) { showError('tickets', 'Number of tickets is required.'); valid = false; }
+    else if (isNaN(ticketCount) || ticketCount < 1) { showError('tickets', 'Must be at least 1 ticket.'); valid = false; }
+    else if (ticketCount > 10) { showError('tickets', 'Maximum 10 tickets per booking.'); valid = false; }
+    else if (eventData && ticketCount > eventData.available_tickets) {
+      showError('tickets', `Only ${eventData.available_tickets} tickets available.`); valid = false;
+    }
+
+    return valid;
+  }
+
+  // ── Submit ──
+  async function handleSubmit() {
+    if (!eventData) return;
+    if (!validate()) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Processing…';
+
+    const ticketCount = parseInt(form.tickets);
+
+    // ── Mock mode (no backend) ──
+    if (usingMock) {
+      await new Promise(r => setTimeout(r, 900));
+      const booking = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        department: form.department,
+        tickets: ticketCount,
+        eventName: eventData.name,
+        totalAmount: ticketCount * eventData.price
+      };
+      eventData.available_tickets = Math.max(0, eventData.available_tickets - ticketCount);
+      renderEventCard();
+      showModal(booking);
+      resetForm();
+      return; // btn state handled after resetForm
+    }
+
+    // ── Real backend ──
+    try {
+      const r = await fetch(`${API}/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          department: form.department,
+          tickets: ticketCount
+        })
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        document.getElementById('serverError').innerHTML =
+          `<div class="api-note err">⚠️ ${data.error || 'Booking failed. Please try again.'}</div>`;
+      } else {
+        eventData.available_tickets = Math.max(0, eventData.available_tickets - ticketCount);
+        renderEventCard();
+        showModal(data.booking);
+        resetForm();
+      }
+    } catch {
+      document.getElementById('serverError').innerHTML =
+        `<div class="api-note err">⚠️ Could not connect to server. Please try again shortly.</div>`;
+    }
+
+    btn.disabled = false;
+    btn.textContent = '🎟️ Confirm Booking';
+  }
+
+  // ── Reset form ──
+  function resetForm() {
+    form = { name: '', email: '', department: '', tickets: '' };
+    document.getElementById('inp-name').value = '';
+    document.getElementById('inp-email').value = '';
+    document.getElementById('inp-department').value = '';
+    document.getElementById('inp-tickets').value = '';
+    document.getElementById('totalAmount').textContent = '₹—';
+    clearAllErrors();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = false;
+    btn.textContent = '🎟️ Confirm Booking';
+  }
+
+  // ── Modal ──
+  function showModal(booking) {
+    document.getElementById('modalSummary').innerHTML = `
+      <div class="summary-row"><span>Name</span><span>${booking.name}</span></div>
+      <div class="summary-row"><span>Email</span><span>${booking.email}</span></div>
+      <div class="summary-row"><span>Event</span><span>${booking.eventName}</span></div>
+      <div class="summary-row"><span>Department</span><span>${booking.department}</span></div>
+      <div class="summary-row"><span>Tickets</span><span>${booking.tickets}</span></div>
+      <div class="summary-row total-row"><span>Total Paid</span><span>₹${booking.totalAmount.toLocaleString('en-IN')}</span></div>
+    `;
+    document.getElementById('modal').style.display = 'flex';
+  }
+  function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  loadEvent();
+</script>
+</body>
+</html>
